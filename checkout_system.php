@@ -14,7 +14,7 @@ class SpecialPrice {
     public $type;
     public $sku;
     public $required_quantity;
-    public $specialPrice;
+    public $special_price;
     public $relatedItems;
 
     public function __construct($type, $sku, $required_quantity, $special_price, $relatedItems = []) {
@@ -28,55 +28,46 @@ class SpecialPrice {
 
 class Checkout {
     private $pricingRules;
-    private $items = [];
     private $itemCounts = [];
 
     public function __construct($pricingRules) {
         $this->pricingRules = $pricingRules;
     }
 
-    public function scan($item) {
-        $this->items[] = $item;
-        if (!isset($this->itemCounts[$item->sku])) {
-            $this->itemCounts[$item->sku] = 0;
+    public function scan($sku) {
+        if (!isset($this->itemCounts[$sku])) {
+            $this->itemCounts[$sku] = 0;
         }
-        $this->itemCounts[$item->sku]++;
+        $this->itemCounts[$sku]++;
     }
 
     public function total() {
+        global $items;
         $total = 0;
-        $appliedSpecials = [];
 
-        foreach ($this->items as $item) {
-            if (!isset($appliedSpecials[$item->sku])) {
-                $appliedSpecials[$item->sku] = 0;
-            }
-        }
-
+        // Apply special prices first
         foreach ($this->pricingRules as $rule) {
             if ($rule->type == 'multipriced') {
                 $sku = $rule->sku;
-                $qty = $this->itemCounts[$sku];
-                $specialQty = $rule->requiredQty;
-                $specialPrice = $rule->specialPrice;
+                $qty = $this->itemCounts[$sku] ?? 0;
+                $specialQty = $rule->required_quantity;
+                $specialPrice = $rule->special_price;
 
                 $total += intdiv($qty, $specialQty) * $specialPrice;
-                $total += ($qty % $specialQty) * $this->getUnitPrice($sku);
-                $appliedSpecials[$sku] += $qty;
+                $total += ($qty % $specialQty) * $this->getUnitPrice($sku, $items);
             } elseif ($rule->type == 'buy_n_get_1_free') {
                 $sku = $rule->sku;
-                $qty = $this->itemCounts[$sku];
-                $specialQty = $rule->requiredQty;
+                $qty = $this->itemCounts[$sku] ?? 0;
+                $specialQty = $rule->required_quantity;
 
-                $total += (intdiv($qty, $specialQty) * ($specialQty - 1) + ($qty % $specialQty)) * $this->getUnitPrice($sku);
-                $appliedSpecials[$sku] += $qty;
+                $total += (intdiv($qty, $specialQty) * ($specialQty - 1) + ($qty % $specialQty)) * $this->getUnitPrice($sku, $items);
             } elseif ($rule->type == 'meal_deal') {
                 $relatedItems = $rule->relatedItems;
                 $qty = min(array_map(function($sku) {
-                    return $this->itemCounts[$sku];
+                    return $this->itemCounts[$sku] ?? 0;
                 }, $relatedItems));
 
-                $total += $qty * $rule->specialPrice;
+                $total += $qty * $rule->special_price;
 
                 foreach ($relatedItems as $sku) {
                     $this->itemCounts[$sku] -= $qty;
@@ -84,17 +75,18 @@ class Checkout {
             }
         }
 
-        foreach ($this->items as $item) {
-            if ($this->itemCounts[$item->sku] > 0 && !in_array($item->sku, array_keys($appliedSpecials))) {
-                $total += $this->getUnitPrice($item->sku);
+        // Add remaining items without special prices
+        foreach ($this->itemCounts as $sku => $count) {
+            if ($count > 0) {
+                $total += $count * $this->getUnitPrice($sku, $items);
             }
         }
 
         return $total;
     }
 
-    private function getUnitPrice($sku) {
-        foreach ($this->items as $item) {
+    private function getUnitPrice($sku, $items) {
+        foreach ($items as $item) {
             if ($item->sku == $sku) {
                 return $item->unitPrice;
             }

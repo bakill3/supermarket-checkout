@@ -18,15 +18,14 @@ $specialPrices = [
 
 $checkout = new Checkout($specialPrices);
 
-// Scan items
-$checkout->scan($items[0]); 
-$checkout->scan($items[1]); 
-$checkout->scan($items[1]); 
-$checkout->scan($items[2]); 
-$checkout->scan($items[2]); 
-$checkout->scan($items[2]); 
-$checkout->scan($items[3]); 
-$checkout->scan($items[4]); 
+$checkout->scan('A');
+$checkout->scan('B');
+$checkout->scan('B');
+$checkout->scan('C');
+$checkout->scan('C');
+$checkout->scan('C');
+$checkout->scan('D');
+$checkout->scan('E');
 
 // total price
 $total = $checkout->total();
