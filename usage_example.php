@@ -1,0 +1,33 @@
+<?php
+
+require_once 'checkout_system.php';
+
+$items = [
+    new Item('A', 50),
+    new Item('B', 75),
+    new Item('C', 25),
+    new Item('D', 150),
+    new Item('E', 200)
+];
+
+$specialPrices = [
+    new SpecialPrice('multipriced', 'B', 2, 125),
+    new SpecialPrice('buy_n_get_1_free', 'C', 3, 0),
+    new SpecialPrice('meal_deal', 'D', 1, 300, ['D', 'E'])
+];
+
+$checkout = new Checkout($specialPrices);
+
+// Scan items
+$checkout->scan($items[0]); 
+$checkout->scan($items[1]); 
+$checkout->scan($items[1]); 
+$checkout->scan($items[2]); 
+$checkout->scan($items[2]); 
+$checkout->scan($items[2]); 
+$checkout->scan($items[3]); 
+$checkout->scan($items[4]); 
+
+// total price
+$total = $checkout->total();
+echo "Total price: £" . ($total / 100.0) . "\n";
