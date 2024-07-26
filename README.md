@@ -34,11 +34,10 @@ This project is a simplified supermarket checkout system implemented in PHP. It 
 	```
 
 ### Example Output
-.
   ```
 	Total price: 7.00 €
 	```
-.
+
 
 ## Project Structure
 - checkout_system.php: Contains the class definitions for the Item, SpecialPrice, and Checkout classes.
