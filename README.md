@@ -34,9 +34,7 @@ This project is a simplified supermarket checkout system implemented in PHP. It 
 	```
 
 ### Example Output
-  ```
 	Total price: 7.00 €
-	```
 
 
 ## Project Structure
