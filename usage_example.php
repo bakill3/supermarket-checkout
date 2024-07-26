@@ -10,6 +10,7 @@ $items = [
     new Item('E', 200)
 ];
 
+// Define special prices
 $specialPrices = [
     new SpecialPrice('multipriced', 'B', 2, 125),
     new SpecialPrice('buy_n_get_1_free', 'C', 3, 0),
@@ -29,4 +30,4 @@ $checkout->scan('E');
 
 // total price
 $total = $checkout->total();
-echo "Total price: £" . ($total / 100.0) . "\n";
+echo "Total price: " . ($total / 100.0) . " €\n";
